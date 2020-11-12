@@ -6,6 +6,7 @@
     "scripts": {
         "test": "ts-mocha src/test/**/*.test.ts"
     },
+    "repository": { "https://github.com/frasermcc9/ts-verify" },
     "keywords": [
         "validator",
         "typescript"
