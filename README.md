@@ -1,4 +1,6 @@
-# Verify-TS
+# Verify-TS 
+[![NPM Version](https://img.shields.io/npm/v/ts-verify.svg?style=flat)](https://www.npmjs.com/package/ts-verify)
+
 This package provides a decorator to help with verifying input to methods.
 ## Install
 ```
