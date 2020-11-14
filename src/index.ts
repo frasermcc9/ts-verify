@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { is } from "./annotations/is";
+import { is, ensure } from "./annotations/is";
 import { validate } from "./annotations/validate";
 
-export { is, validate };
+export { is, validate, ensure };

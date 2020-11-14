@@ -26,3 +26,8 @@ export function is(validator: (value: any) => boolean) {
         Reflect.defineMetadata("validator", validators, target, propertyName);
     };
 }
+
+/**
+ * Alias for {@see is}
+ */
+export const ensure = is;
