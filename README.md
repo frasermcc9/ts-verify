@@ -31,3 +31,34 @@ public testArraySumGteTen(
 }
 ```
 This will throw if the passed array of numbers does not sum to at least 10.
+
+## Type Checking
+You can also ensure types are correct:
+```ts
+@validate()
+public donate(@is((v) => v > 0, "number") value: number) {
+    //..
+}
+```
+Without the additional `"number"` parameter, the following would be valid:
+```ts
+donate("4");
+```
+However, with this additional checking, the above will throw.
+
+<br>
+
+# Complete Example
+```ts
+class RandomGenerator {
+
+    @validate()
+    public nextInt(
+        @is((v) => v >= 0, "number") min: number,
+        @is((v) => v >= 0, "number") max: number
+    ): number {
+        return ~~(Math.random() * (max - min) + min);
+    }
+
+}
+```
