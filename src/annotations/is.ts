@@ -14,10 +14,20 @@
 
 import "reflect-metadata";
 
-export function is(validator: (value: any) => boolean) {
-    return function (target: Object, propertyName: string, index: number): void {
-        const params: number[] = Reflect.getOwnMetadata("name", target, propertyName) || [];
-        let validators = Reflect.getOwnMetadata("validator", target, propertyName) || [];
+export function is(validator: (value: any) => boolean, type?: Type) {
+    if (type != undefined) {
+        const oldValidator = validator;
+        validator = (v) => oldValidator(v) && typeof v === type;
+    }
+    return function (
+        target: Object,
+        propertyName: string,
+        index: number
+    ): void {
+        const params: number[] =
+            Reflect.getOwnMetadata("name", target, propertyName) || [];
+        let validators =
+            Reflect.getOwnMetadata("validator", target, propertyName) || [];
 
         params.push(index);
         validators[index] = validator;
@@ -31,3 +41,13 @@ export function is(validator: (value: any) => boolean) {
  * Alias for {@see is}
  */
 export const ensure = is;
+
+type Type =
+    | "string"
+    | "number"
+    | "bigint"
+    | "boolean"
+    | "symbol"
+    | "undefined"
+    | "object"
+    | "function";
