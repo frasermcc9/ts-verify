@@ -1,11 +1,11 @@
 // Copyright 2020 Fraser
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,6 +14,17 @@
 
 import "reflect-metadata";
 
+/**
+ * Parameter decorator for ensuring valid input. To ensure type equality, ensure
+ * that strict equals is used where possible. Optional second argument can be
+ * given to ensure type equality as well as regular equality.
+ *
+ * @param validator function that takes a single parameter: the input variable.
+ * The function should return true if the input is acceptable.
+ *
+ * @param type the type that the input must be
+ *
+ */
 export function is(validator: (value: any) => boolean, type?: Type) {
     if (type != undefined) {
         const oldValidator = validator;
@@ -42,6 +53,9 @@ export function is(validator: (value: any) => boolean, type?: Type) {
  */
 export const ensure = is;
 
+/**
+ * Valid types to check for
+ */
 type Type =
     | "string"
     | "number"
