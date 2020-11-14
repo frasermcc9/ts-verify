@@ -6,11 +6,11 @@ describe("Validator Function Tests", () => {
 
     describe("Single Number Parameter Method", () => {
         it("Should execute the single parameter number method", () => {
-            expect(test.testOneNumber(5)).to.equal(5);
+            expect(test.testNumberGtZero(5)).to.equal(5);
         });
 
         it("Should reject invalid input to single parameter number method", () => {
-            expect(() => test.testOneNumber(-5)).to.throw();
+            expect(() => test.testNumberGtZero(-5)).to.throw();
         });
     });
 
@@ -83,5 +83,24 @@ describe("Validator Function Tests", () => {
         it("Should reject invalid string", () => {
             expect(() => test.testStringSaysHi("hi")).to.throw();
         });
+        it("Should accept the alias", () => {
+            expect(test.testStringSaysHiWithAlias("Hi")).to.equal("Hi");
+        });
+        it("Should deny the alias with invalid input", () => {
+            expect(() => test.testStringSaysHiWithAlias("hi")).to.throw();
+        });
+    });
+});
+
+describe("Faulty types", () => {
+    it("Should reject faulty types", () => {
+        let test: Test = new Test();
+        //@ts-expect-error
+        expect(() => test.testNumberGtZero("4")).to.throw();
+    });
+
+    it("Should accept regular types", () => {
+        let test: Test = new Test();
+        expect(test.testNumberGtZero(4)).to.equal(4);
     });
 });

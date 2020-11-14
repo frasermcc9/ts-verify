@@ -1,10 +1,10 @@
-import { is, validate } from "..";
+import { is, validate, ensure } from "..";
 
 export { Test };
 
 class Test {
     @validate()
-    public testOneNumber(@is((v) => v > 0) value: number): number {
+    public testNumberGtZero(@is((v) => v > 0, "number") value: number): number {
         return value;
     }
 
@@ -39,6 +39,13 @@ class Test {
 
     @validate()
     public testStringSaysHi(@is((a: string) => a == "Hi") str: string) {
+        return str;
+    }
+
+    @validate()
+    public testStringSaysHiWithAlias(
+        @ensure((a: string) => a == "Hi", "string") str: string
+    ) {
         return str;
     }
 }
