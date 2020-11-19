@@ -61,5 +61,8 @@ class Test {
         return num;
     }
 
-
+    @validate()
+    public testOnlyTypeValidation(@is("string") str: string) {
+        return str;
+    }
 }

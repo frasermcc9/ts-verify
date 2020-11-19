@@ -142,3 +142,16 @@ describe("Class context checks", () => {
         expect(test.testContextAwareAllArgCheck(4, 4)).to.equal(8);
     });
 });
+
+describe("Testing only type check", () => {
+    it("Should accept the valid type", () => {
+        let test: Test = new Test();
+        expect(test.testOnlyTypeValidation("hello")).to.equal("hello");
+    });
+    
+    it("Should reject the invalid type", () => {
+        let test: Test = new Test();
+        //@ts-expect-error
+        expect(() => test.testOnlyTypeValidation(4)).to.throw();
+    });
+});
