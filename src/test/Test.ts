@@ -9,10 +9,7 @@ class Test {
     }
 
     @validate()
-    public testTwoNumbers(
-        @is((v) => v > 0) value: number,
-        @is((v) => v >= 5) value3: number
-    ): number {
+    public testTwoNumbers(@is((v) => v > 0) value: number, @is((v) => v >= 5) value3: number): number {
         return value + value3;
     }
 
@@ -31,9 +28,7 @@ class Test {
     }
 
     @validate()
-    public testArraySumGteTen(
-        @is((a: number[]) => a.reduce((p, c) => p + c) >= 10) array: number[]
-    ) {
+    public testArraySumGteTen(@is((a: number[]) => a.reduce((p, c) => p + c) >= 10) array: number[]) {
         return array;
     }
 
@@ -43,17 +38,28 @@ class Test {
     }
 
     @validate()
-    public testStringSaysHiWithAlias(
-        @ensure((a: string) => a == "Hi", "string") str: string
-    ) {
+    public testStringSaysHiWithAlias(@ensure((a: string) => a == "Hi", "string") str: string) {
         return str;
     }
 
-    @validate()
-    public testCheckingAllArgs(
-        smallNum: number,
-        @is((a, b) => a < b) largeNum: number
-    ) {
+    @validate({ argFn: (a, b) => b > a })
+    public testCheckingAllArgs(smallNum: number, largeNum: number) {
         return smallNum + largeNum;
     }
+
+    public FieldA = 3;
+
+    @validate({
+        contextFn: (context: Test, a, b) => a + b > context.FieldA,
+    })
+    public testContextAwareAllArgCheck(smallNum: number, largeNum: number) {
+        return smallNum + largeNum;
+    }
+
+    @validate()
+    public testInputGreaterThanFieldA(@is<Test>((a, context) => a > context.FieldA) num: number) {
+        return num;
+    }
+
+
 }

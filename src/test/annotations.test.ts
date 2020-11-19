@@ -116,3 +116,29 @@ describe("Multi-input checking", () => {
         expect(() => test.testCheckingAllArgs(5, 3)).to.throw();
     });
 });
+
+describe("Class context checks", () => {
+    it("Should deny since it fails the contextual validation", () => {
+        let test: Test = new Test();
+        test.FieldA = 5;
+        expect(() => test.testInputGreaterThanFieldA(3)).to.throw();
+    });
+
+    it("Should accept the context aware validation (argument greater than field)", () => {
+        let test: Test = new Test();
+        test.FieldA = 5;
+        expect(test.testInputGreaterThanFieldA(6)).to.equal(6);
+    });
+
+    it("Should reject as the argument sum is not greater than the field", () => {
+        let test: Test = new Test();
+        test.FieldA = 5;
+        expect(() => test.testContextAwareAllArgCheck(2, 1)).to.throw();
+    });
+
+    it("Should accept as the argument sum is greater than the field", () => {
+        let test: Test = new Test();
+        test.FieldA = 5;
+        expect(test.testContextAwareAllArgCheck(4, 4)).to.equal(8);
+    });
+});
