@@ -29,23 +29,24 @@ import "reflect-metadata";
  * @param type the type that the input must be
  *
  */
-export function is<T>(
-    validator: (value: any, context: T) => boolean,
-    type?: Type
-) {
-    return function (
-        target: Object,
-        propertyName: string,
-        index: number
-    ): void {
-        const params: number[] =
-            Reflect.getOwnMetadata("name", target, propertyName) || [];
-        let validators =
-            Reflect.getOwnMetadata("validator", target, propertyName) || [];
+export function is<T>(type: Type): ReturnFn;
+export function is<T>(validator: (value: any, context: T) => boolean): ReturnFn;
+export function is<T>(validator: (value: any, context: T) => boolean, type: Type): ReturnFn;
+export function is<T>(validator?: ((value: any, context: T) => boolean) | Type, type?: Type): ReturnFn {
+    if (typeof validator == "string") {
+        type = validator;
+        validator = undefined;
+    }
+
+    return function (target: Object, propertyName: string, index: number) {
+        const params: number[] = Reflect.getOwnMetadata("name", target, propertyName) || [];
+        let validators = Reflect.getOwnMetadata("validator", target, propertyName) || [];
         let types = Reflect.getOwnMetadata("types", target, propertyName) || [];
 
         params.push(index);
-        validators[index] = validator;
+
+        validators[index] = validator ?? (() => true);
+
         if (type != undefined) {
             types[index] = type;
         }
@@ -64,12 +65,6 @@ export const ensure = is;
 /**
  * Valid types to check for
  */
-type Type =
-    | "string"
-    | "number"
-    | "bigint"
-    | "boolean"
-    | "symbol"
-    | "undefined"
-    | "object"
-    | "function";
+type Type = "string" | "number" | "bigint" | "boolean" | "symbol" | "undefined" | "object" | "function";
+
+type ReturnFn = (target: Object, propertyName: string, index: number) => void;
