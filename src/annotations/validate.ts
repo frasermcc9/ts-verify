@@ -13,41 +13,106 @@
 // limitations under the License.
 
 import "reflect-metadata";
-import { deepStrictEqual } from "assert";
+import ValidationError from "../util/ValidationError";
 
-export function validate() {
-    return function (
-        target: Object,
-        key: string,
-        descriptor: TypedPropertyDescriptor<any>
-    ) {
-        const params: number[] =
-            Reflect.getOwnMetadata("name", target, key) || [];
-        const validators: ((...value: any) => boolean)[] =
+/**
+ * Mark this method for validation checking. This will allow any parameter
+ * decorators that are marked with the `@is` annotation to be checked. It can
+ * also have its own validation function passed.
+ *
+ * @param fullValidator Optional parameter that takes a function as input. The
+ * function is wrapped in an object, with two types:
+ * ```ts
+ * {argFn:(...) => boolean}
+ *  ```
+ * takes in *n* parameters, one for each parameter of the decorated method.
+ * ```ts
+ * {contextFn:(...) => boolean}
+ * ```
+ * takes in *n+1* parameters, where the first is a parameter containing the
+ * object that this method is being called on. The following arguments are the
+ * method parameters.
+ *
+ * @since 1.0.0
+ * @version 1.0.5
+ * @author Fraser
+ */
+export function validate(fullValidator?: FullValidator) {
+    return function (target: Object, key: string, descriptor: TypedPropertyDescriptor<any>) {
+        // get metadata
+        const params: number[] = Reflect.getOwnMetadata("name", target, key) || [];
+        const validators: ((value: any, context: any) => boolean)[] =
             Reflect.getOwnMetadata("validator", target, key) || [];
-        const types: string[] =
-            Reflect.getOwnMetadata("types", target, key) || [];
+        const types: string[] = Reflect.getOwnMetadata("types", target, key) || [];
 
         const method = descriptor.value;
         descriptor.value = function (...args: any) {
+            //First check full validators
+            if (fullValidator != undefined) {
+                if (fullValidator.argFn && !fullValidator.argFn(...args)) {
+                    throw new ValidationError(
+                        `Full validation check failed for method '${method}', with validator '${fullValidator} and arguments ${args}.'`
+                    );
+                }
+                if (fullValidator.contextFn && !fullValidator.contextFn(this, ...args)) {
+                    throw new ValidationError(
+                        `Full validation check failed for method '${method}', with validator '${fullValidator} and arguments ${args}.'`
+                    );
+                }
+            }
+
+            // Iterate through parameters and check manual '@is' validators
             for (const p of params) {
                 const validator = validators[p];
                 const arg = args[p];
                 const type = types[p];
-                try {
-                    if (validator.length == 1) {
-                        deepStrictEqual(validator(arg), true);
-                    } else {
-                        deepStrictEqual(validator(...args), true);
-                    }
-                    if (type != undefined) deepStrictEqual(typeof arg, type);
-                } catch (e) {
-                    throw new TypeError(
-                        `Invalid Argument '${arg}' for validator '${validator}.' Threw with ${e}.`
-                    );
+
+                // checking validator function
+                if (validator(arg, this) !== true) {
+                    throw new ValidationError(`Invalid Argument '${arg}' for validator '${validator}.'`);
+                }
+                // checking optional type validator
+                if (type != undefined && typeof arg !== type) {
+                    throw new ValidationError(`Invalid Argument '${arg}' for validator '${validator}.'`);
                 }
             }
             return method.apply(this, args);
         };
     };
+}
+
+/**
+ * The types of validation functions for the validate validation method.
+ * @author Fraser
+ * @since 1.0.5
+ * @version 1.0.5
+ */
+interface FullValidator {
+    /**
+     * Function that will be passed the parameters that the method is given.
+     * @example
+     *  class MyClass{
+     *      //at sign was omitted due to JSDoc conflict
+     *      validate({ argFn: (a, b, c) => a + b + c > 10 })
+     *      public test(first: number, second: number, third: number) {
+     *          //Omitted
+     *      }
+     *  }
+     */
+    argFn?: (...args: any) => boolean;
+    /**
+     * Function that will be passed the parameters that the method is given, as
+     * well as the object the method is being called on.
+     * @example
+     * class MyClass {
+     *      myValue:number = 3;
+     *
+     *      //at sign was omitted due to JSDoc conflict
+     *      validate({ contextFn: (context: MyClass, a, b) => a + b + context.myValue > 10 })
+     *      public test(first: number, second: number) {
+     *          //Omitted
+     *      }
+     * }
+     */
+    contextFn?: (context: any, ...args: any) => boolean;
 }
