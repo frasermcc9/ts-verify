@@ -22,10 +22,17 @@ import "reflect-metadata";
  * @param validator function that takes a single parameter: the input variable.
  * The function should return true if the input is acceptable.
  *
+ * The second parameter, if desired, can also be used. It contains a reference
+ * to the object containing this method, if you would like to validate the
+ * condition of something (like a field) in the object.
+ *
  * @param type the type that the input must be
  *
  */
-export function is(validator: (...value: any) => boolean, type?: Type) {
+export function is<T>(
+    validator: (value: any, context: T) => boolean,
+    type?: Type
+) {
     return function (
         target: Object,
         propertyName: string,
@@ -48,8 +55,6 @@ export function is(validator: (...value: any) => boolean, type?: Type) {
         Reflect.defineMetadata("types", types, target, propertyName);
     };
 }
-
-export function isContext()
 
 /**
  * Alias for {@see is}
