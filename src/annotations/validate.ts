@@ -16,19 +16,35 @@ import "reflect-metadata";
 import { deepStrictEqual } from "assert";
 
 export function validate() {
-    return function (target: Object, key: string, descriptor: TypedPropertyDescriptor<any>) {
-        const params: number[] = Reflect.getOwnMetadata("name", target, key) || [];
-        const validators: ((value: any) => boolean)[] = Reflect.getOwnMetadata("validator", target, key) || [];
+    return function (
+        target: Object,
+        key: string,
+        descriptor: TypedPropertyDescriptor<any>
+    ) {
+        const params: number[] =
+            Reflect.getOwnMetadata("name", target, key) || [];
+        const validators: ((...value: any) => boolean)[] =
+            Reflect.getOwnMetadata("validator", target, key) || [];
+        const types: string[] =
+            Reflect.getOwnMetadata("types", target, key) || [];
 
         const method = descriptor.value;
         descriptor.value = function (...args: any) {
             for (const p of params) {
                 const validator = validators[p];
                 const arg = args[p];
+                const type = types[p];
                 try {
-                    deepStrictEqual(validator(arg), true);
+                    if (validator.length == 1) {
+                        deepStrictEqual(validator(arg), true);
+                    } else {
+                        deepStrictEqual(validator(...args), true);
+                    }
+                    if (type != undefined) deepStrictEqual(typeof arg, type);
                 } catch (e) {
-                    throw new TypeError(`Invalid Argument '${arg}' for validator '${validator}.' Threw with ${e}.`);
+                    throw new TypeError(
+                        `Invalid Argument '${arg}' for validator '${validator}.' Threw with ${e}.`
+                    );
                 }
             }
             return method.apply(this, args);

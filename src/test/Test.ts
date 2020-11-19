@@ -48,4 +48,12 @@ class Test {
     ) {
         return str;
     }
+
+    @validate()
+    public testCheckingAllArgs(
+        smallNum: number,
+        @is((a, b) => a < b) largeNum: number
+    ) {
+        return smallNum + largeNum;
+    }
 }

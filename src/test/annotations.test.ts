@@ -104,3 +104,15 @@ describe("Faulty types", () => {
         expect(test.testNumberGtZero(4)).to.equal(4);
     });
 });
+
+describe("Multi-input checking", () => {
+    it("Should allow the input that is valid (where second argument is greater than first)", () => {
+        let test: Test = new Test();
+        expect(test.testCheckingAllArgs(4, 7)).to.equal(11);
+    });
+
+    it("Should reject the multi-argument method call where the arguments are not valid (second argument must be greater than first)", () => {
+        let test: Test = new Test();
+        expect(() => test.testCheckingAllArgs(5, 3)).to.throw();
+    });
+});

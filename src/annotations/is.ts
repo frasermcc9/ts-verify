@@ -25,11 +25,7 @@ import "reflect-metadata";
  * @param type the type that the input must be
  *
  */
-export function is(validator: (value: any) => boolean, type?: Type) {
-    if (type != undefined) {
-        const oldValidator = validator;
-        validator = (v) => oldValidator(v) && typeof v === type;
-    }
+export function is(validator: (...value: any) => boolean, type?: Type) {
     return function (
         target: Object,
         propertyName: string,
@@ -39,14 +35,21 @@ export function is(validator: (value: any) => boolean, type?: Type) {
             Reflect.getOwnMetadata("name", target, propertyName) || [];
         let validators =
             Reflect.getOwnMetadata("validator", target, propertyName) || [];
+        let types = Reflect.getOwnMetadata("types", target, propertyName) || [];
 
         params.push(index);
         validators[index] = validator;
+        if (type != undefined) {
+            types[index] = type;
+        }
 
         Reflect.defineMetadata("name", params, target, propertyName);
         Reflect.defineMetadata("validator", validators, target, propertyName);
+        Reflect.defineMetadata("types", types, target, propertyName);
     };
 }
+
+export function isContext()
 
 /**
  * Alias for {@see is}
