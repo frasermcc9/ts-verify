@@ -35,30 +35,94 @@ This will throw if the passed array of numbers does not sum to at least 10.
 ## Type Checking
 You can also ensure types are correct:
 ```ts
-@validate()
-public donate(@is((v) => v > 0, "number") value: number) {
-    //..
+class PaymentProvider {
+    @validate()
+    public pay(@is((v) => v > 0, "number") value: number) {
+        // Omitted
+    }
 }
+
 ```
 Without the additional `"number"` parameter, the following would be valid:
 ```ts
-donate("4");
+pay("4");
 ```
 However, with this additional checking, the above will throw.
 
-<br>
+Alternatively, you can just check for a type:
+```ts
+class MyClass {
+    @validate()
+    public thisIsAString(@is("string") myString: string) {
+        // Omitted
+    }
+}
+```
 
-# Complete Example
+## Contextual Checking
+Validation functions can access the object the method is being called on:
+```ts
+class Player {
+    private energy: number = 50;
+    @validate()
+    public doAction(@is((e, context:Player) => energy >= e) energyCost: number): void {
+        // Omitted
+    }
+}
+```
+The optional second parameter to an `@is` call will pass a reference to the
+object. We can therefore access methods and fields on this object. For
+typechecking, either the function or parameter must have a type
+parameter/annotation, i.e.:
+```ts
+@is<Player>((e, context) => ... )
+```
+or
+```ts
+@is((e,context:Player) => ... )
+```
+
+## Full Method Checking
+A validation function can be called inside the `@validate()` call as well. This
+function has access to all arguments in the method, for example:
 ```ts
 class RandomGenerator {
-
-    @validate()
-    public nextInt(
-        @is((v) => v >= 0, "number") min: number,
-        @is((v) => v >= 0, "number") max: number
-    ): number {
+    @validate({ argFn: (a, b) => a < b })
+    public nextInt(@is("number") min: number, @is("number") max: number): number {
         return ~~(Math.random() * (max - min) + min);
     }
+}
+```
+The order of the arguments in the validation function is the same order as
+passed in the method. In this example, `a` would be `min`, and `b` would be
+`max`.
 
+
+The validation function inside `@validate()` can also access the object context.
+Note the name of the argument inside the object passed to `@validate()`:
+```ts
+class SpaceMission {
+    private fuel = 100;
+
+    @validate({ contextFn: (context, a, b) => a + b <= context.fuel })
+    public launch(fuelToDestination: number, fuelToReturn: number) {
+        // Omitted
+    }
+}
+```
+The first parameter to `contextFn` is the object. The remaining are the method
+arguments. This can be contrasted to `argFn` which just passes the arguments.
+For a more complete example:
+```ts
+class SpaceMission {
+    private fuel = 100;
+
+    @validate({ contextFn: (context, a, b) => a + b <= context.fuel })
+    public launch(
+        @is((f) => f > 0, "number") fuelToDestination: number,
+        @is((f) => f > 0, "number") fuelToReturn: number
+    ) {
+        // Omitted
+    }
 }
 ```
