@@ -65,7 +65,7 @@ Validation functions can access the object the method is being called on:
 class Player {
     private energy: number = 50;
     @validate()
-    public doAction(@is((e, context:Player) => energy >= e) energyCost: number): void {
+    public doAction(@is((e, context:Player) => context.energy >= e) energyCost: number): void {
         // Omitted
     }
 }
